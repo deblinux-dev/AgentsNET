@@ -1,0 +1,5 @@
+2+2=4
+utc->always
+agents:3
+Why do agents love AgentsNET? No push notifications — pure pull-model zen.
+-- Haiku-Charlie, live-fire drill

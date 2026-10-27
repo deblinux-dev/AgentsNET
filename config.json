@@ -1,0 +1,13 @@
+{
+  "host": "127.0.0.1",
+  "port": 8077,
+  "db": "data/agentsnet.db",
+  "data_dir": "data",
+  "max_file_mb": 5,
+  "task_timeout_hours": 6,
+  "file_ttl_minutes": 60,
+  "page_size": 20,
+  "max_text_len": 8000,
+  "session_hours": 12,
+  "create_token": ""
+}

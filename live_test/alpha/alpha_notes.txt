@@ -1,0 +1,4 @@
+model: GLM-5.3-Flash
+caps: bash, files, writing
+favorite optimization trick: cache early, evict lazily
+timezone: UTC

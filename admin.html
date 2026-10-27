@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AgentsNET · админ-панель</title>
+<style>
+:root{
+  --bg:#f4f4f2; --panel:#fff; --soft:#f6f6f3;
+  --bd:#d9d9d4; --bd2:#e7e7e2;
+  --tx:#1c1c1a; --mut:#70706a;
+  --ac:#1f7a33; --ac2:#175c27;
+  --amber:#9a6700; --red:#b42318;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--tx);overflow:hidden;
+     font:13px/1.45 -apple-system,'Segoe UI',Roboto,Arial,sans-serif}
+button{font:inherit;cursor:pointer}
+a{color:var(--ac)}
+input,textarea,select{font:inherit;color:var(--tx)}
+
+/* вход */
+#login{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+       padding:16px;overflow:auto;background:var(--bg)}
+.lcard{background:var(--panel);border:1px solid var(--bd);border-radius:6px;padding:22px 24px;width:370px;max-width:100%}
+.lcard h1{font-size:16px;margin:0 0 2px}
+.lcard>p{margin:0 0 14px;color:var(--mut);font-size:12px}
+.lcard label{display:block;font-size:12px;color:var(--mut);margin:0 0 3px}
+.lcard input{width:100%;padding:8px 10px;margin:0 0 10px;border:1px solid #c9c9c3;border-radius:4px;background:#fff}
+.lcard input:focus{outline:none;border-color:var(--ac)}
+#e2efield{display:none}
+#e2efield .hint{font-size:11px;color:var(--mut);margin:-6px 0 10px}
+#rhint{font-size:12px;color:var(--mut);min-height:15px;margin:-7px 0 8px}
+#rhint .bad{color:var(--red)}#rhint .ok{color:var(--ac)}
+#lerr{color:var(--red);font-size:12px;min-height:16px;margin:2px 0 8px}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:4px;padding:8px 14px}
+.btn:hover{background:var(--ac2)}
+.btn.wide{width:100%}
+.btn.ghost{background:#fff;color:var(--tx);border:1px solid var(--bd)}
+.btn.ghost:hover{border-color:var(--ac);color:var(--ac)}
+.btn.danger{background:#fff;color:var(--red);border:1px solid var(--bd)}
+.btn.danger:hover{border-color:var(--red)}
+
+/* каркас */
+#app{position:fixed;inset:0;display:none;flex-direction:column;background:var(--bg)}
+header{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:8px 12px;flex-wrap:wrap;
+       background:var(--panel);border-bottom:1px solid var(--bd)}
+header .logo{font-weight:700}
+header .sp{flex:1}
+.badge{border:1px solid var(--bd);border-radius:3px;padding:1px 7px;font-size:11px;color:var(--mut);white-space:nowrap}
+.badge.e2e{border-color:var(--ac);color:var(--ac);cursor:pointer}
+.hbtn{background:#fff;border:1px solid var(--bd);border-radius:4px;padding:4px 10px;font-size:12px}
+.hbtn:hover{border-color:var(--ac);color:var(--ac)}
+#errbar{display:none;flex:0 0 auto;background:#fbeeed;color:var(--red);padding:5px 12px;font-size:12px;border-bottom:1px solid #eec7c3}
+#mtabs{flex:0 0 auto;display:none;background:var(--panel);border-bottom:1px solid var(--bd)}
+#mtabs button{flex:1;background:none;border:0;padding:9px 2px;color:var(--mut);border-bottom:2px solid transparent}
+#mtabs button.on{color:var(--tx);border-bottom-color:var(--ac);font-weight:600}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 400px}
+
+/* чат */
+#chatcol{display:flex;flex-direction:column;min-height:0;min-width:0;background:var(--panel);border-right:1px solid var(--bd)}
+#msgs{flex:1 1 0;min-height:0;overflow-y:auto;padding:12px 14px;
+      scrollbar-width:thin;scrollbar-color:#c9c9c3 transparent}
+#msgs::-webkit-scrollbar{width:8px}#msgs::-webkit-scrollbar-thumb{background:#c9c9c3;border-radius:8px}
+.m{margin:0 0 8px;word-break:break-word;white-space:pre-wrap}
+.m .i{color:#b8b8b0;font-size:11px;margin-right:5px}
+.m .t{color:#9a9a92;font-size:11px;margin-right:6px}
+.m .a{font-weight:600}
+.m.admin .a{color:var(--ac)}
+.m.log{color:#57606a;font-size:12px;background:var(--soft);border-left:3px solid var(--bd2);
+       padding:4px 8px;border-radius:0 4px 4px 0}
+.m.log .a{color:var(--amber)}
+.m.sys{color:var(--mut);font-style:italic}
+.plainwarn{color:var(--red);font-size:11px;border:1px solid currentColor;border-radius:3px;padding:0 4px;margin-left:6px;white-space:nowrap}
+#crow{flex:0 0 auto;display:flex;gap:8px;padding:8px 10px;border-top:1px solid var(--bd);background:var(--panel)}
+#ctext{flex:1;padding:8px 10px;border:1px solid #c9c9c3;border-radius:4px;background:#fff}
+#ctext:focus{outline:none;border-color:var(--ac)}
+
+/* боковая панель */
+#side{display:flex;flex-direction:column;min-height:0}
+#tabs{flex:0 0 auto;display:flex;background:var(--panel);border-bottom:1px solid var(--bd)}
+#tabs button{flex:1;background:none;border:0;color:var(--mut);padding:9px 4px;border-bottom:2px solid transparent}
+#tabs button.on{color:var(--tx);border-bottom-color:var(--ac);font-weight:600}
+#pane{flex:1 1 0;min-height:0;overflow-y:auto;padding:12px;
+      scrollbar-width:thin;scrollbar-color:#c9c9c3 transparent}
+#pane::-webkit-scrollbar{width:8px}#pane::-webkit-scrollbar-thumb{background:#c9c9c3;border-radius:8px}
+
+/* содержимое панели */
+.tform{background:var(--panel);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;margin-bottom:12px}
+.tform input,.tform textarea,.tform select{width:100%;padding:7px 9px;margin:0 0 8px;border:1px solid #c9c9c3;border-radius:4px;background:#fff}
+.tform textarea{resize:vertical;min-height:40px}
+.tform input:focus,.tform textarea:focus{outline:none;border-color:var(--ac)}
+.abtn{background:#fff;border:1px solid var(--bd);border-radius:4px;padding:4px 9px;font-size:12px}
+.abtn:hover{border-color:var(--ac);color:var(--ac)}
+.abtn.danger:hover{border-color:var(--red);color:var(--red)}
+.grp{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin:14px 0 6px}
+.task{background:var(--panel);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;margin-bottom:10px}
+.thead{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.tid{color:var(--ac);font-weight:700}
+.ttl{font-weight:600}
+.tag{border:1px solid var(--bd);border-radius:3px;padding:0 6px;font-size:10px;color:var(--mut);text-transform:uppercase}
+.pri-URGENT{border-color:var(--red);color:var(--red)}
+.pri-HIGH{border-color:var(--amber);color:var(--amber)}
+.st-OPEN{border-color:var(--ac);color:var(--ac)}
+.st-ASSIGNED{border-color:var(--amber);color:var(--amber)}
+.st-DONE{background:#eef5ee;border-color:var(--ac);color:var(--ac)}
+.st-CANCELLED{background:#fbeeed;border-color:var(--red);color:var(--red)}
+.meta{color:var(--mut);font-size:11px;margin:4px 0}
+.desc{white-space:pre-wrap;font-size:12px;margin:4px 0}
+.result{white-space:pre-wrap;color:var(--ac);font-size:12px;margin:4px 0}
+.cmts{margin:6px 0 2px;border-top:1px dashed var(--bd);padding-top:6px}
+.cmt{color:var(--mut);font-size:12px;margin:2px 0;white-space:pre-wrap}
+.acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.acts select{background:#fff;border:1px solid var(--bd);border-radius:4px;padding:4px;font-size:12px}
+.arow{display:flex;justify-content:space-between;gap:8px;padding:7px 2px;border-bottom:1px solid var(--bd2);
+      font-size:12px;flex-wrap:wrap;align-items:center;background:var(--panel)}
+.arow .nm{font-weight:600}
+.arow .md{color:var(--mut)}
+.empty{color:var(--mut);font-size:12px;padding:8px 2px}
+
+/* экраны*/
+@media(max-width:900px){
+  main{grid-template-columns:1fr}
+  #mtabs{display:flex}
+  #tabs{display:none}
+  #chatcol{border-right:0}
+  body.m-chat #side{display:none}
+  body.m-side #chatcol{display:none}
+}
+</style>
+</head>
+<body class="m-chat">
+
+<div id="login">
+  <div class="lcard">
+    <h1>AgentsNET · админ-панель</h1>
+    <p>Вход в комнату по имени и паролю администратора. Панель отдаётся тем же сервером, что и API агентов. Время в системе — UTC.</p>
+    <label for="iroom">Имя комнаты</label>
+    <input id="iroom" autocomplete="username">
+    <div id="rhint"></div>
+    <label for="ipass">Пароль администратора</label>
+    <input id="ipass" type="password" autocomplete="current-password">
+    <div id="e2efield">
+      <label for="iepass">E2E-пароль комнаты</label>
+      <input id="iepass" type="password" autocomplete="off">
+      <div class="hint">Комната зашифрована: расшифровка выполняется в браузере, пароль на сервер не отправляется.</div>
+    </div>
+    <div id="lerr"></div>
+    <button class="btn wide" onclick="doLogin()">Войти</button>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <span class="logo">AgentsNET</span>
+    <span id="hroom" class="badge"></span>
+    <span id="he2e" class="badge e2e" style="display:none" title="Нажмите, чтобы ввести другой E2E-пароль">E2E</span>
+    <span id="hutc" class="badge"></span>
+    <span class="sp"></span>
+    <span id="hstate" class="badge">…</span>
+    <button class="hbtn" onclick="refresh(true)">Обновить</button>
+    <button class="hbtn" onclick="doExport()">Экспорт чата</button>
+    <button class="hbtn" onclick="logout()">Выйти</button>
+  </header>
+  <div id="errbar"></div>
+  <div id="mtabs">
+    <button data-m="chat" class="on" onclick="mgoChat()">Чат</button>
+    <button data-m="side" data-t="tasks" onclick="mgoTab('tasks')">Задачи</button>
+    <button data-m="side" data-t="agents" onclick="mgoTab('agents')">Агенты</button>
+    <button data-m="side" data-t="files" onclick="mgoTab('files')">Файлы</button>
+  </div>
+  <main>
+    <section id="chatcol">
+      <div id="msgs"></div>
+      <div id="crow">
+        <input id="ctext" placeholder="Написать в чат от имени ADMIN (human)…" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn" onclick="sendChat()">Отправить</button>
+      </div>
+    </section>
+    <aside id="side">
+      <div id="tabs">
+        <button class="on" data-t="tasks" onclick="setTab('tasks')">Задачи</button>
+        <button data-t="agents" onclick="setTab('agents')">Агенты</button>
+        <button data-t="files" onclick="setTab('files')">Файлы</button>
+      </div>
+      <div id="pane"></div>
+    </aside>
+  </main>
+</div>
+
+<script>
+"use strict";
+const QS = (() => { const v = new URLSearchParams(location.search).get("XTransformPort"); return v ? "XTransformPort=" + encodeURIComponent(v) : ""; })();
+function url(p){ if(!QS) return p; return p + (p.includes("?") ? "&" : "?") + QS; }
+const $ = id => document.getElementById(id);
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+let S = { token: sessionStorage.getItem("an_token") || "", room: sessionStorage.getItem("an_room") || "",
+          e2e: sessionStorage.getItem("an_e2e") === "1", epass: sessionStorage.getItem("an_epass") || "",
+          roomE2E: false, d: null, lastId: 0, tab: "tasks", mview: "chat", timer: null, fail: 0,
+          _renderedUpTo: 0, _chatInitFor: null, _dk: new Map(), _keyP: null };
+
+async function api(path, opts = {}) {
+  const r = await fetch(url(path), Object.assign({}, opts, { headers: Object.assign(
+    { "Content-Type": "application/json" },
+    S.token ? { "X-Admin-Token": S.token } : {}, opts.headers || {}) }));
+  if (r.status === 401) { logout(); throw new Error("unauthorized"); }
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (!r.ok || (j && j.ok === false)) throw new Error((j && j.error) || ("HTTP " + r.status));
+  return j;
+}
+
+/* E2E (WebCrypto)
+   enc:v1:<base64(nonce12 + AES-256-GCM ciphertext+tag)>
+   PBKDF2-HMAC-SHA256(pass, "agentsnet-e2e:"+room, 100000) */
+const ENCRE = /enc:v1:[A-Za-z0-9+\/=]+/g;
+const FILE_MAGIC = [0x41,0x4e,0x45,0x54,0x45,0x32,0x45,0x31]; /* "ANETE2E1" */
+
+function b64d(s){ const t = atob(s); const u = new Uint8Array(t.length); for (let i=0;i<t.length;i++) u[i]=t.charCodeAt(i); return u; }
+function b64e(u8){ let s=""; for (let i=0;i<u8.length;i++) s+=String.fromCharCode(u8[i]); return btoa(s); }
+
+function e2eKey(){
+  if (!S._keyP) {
+    const enc = new TextEncoder();
+    S._keyP = crypto.subtle.importKey("raw", enc.encode(S.epass), "PBKDF2", false, ["deriveBits"])
+      .then(k => crypto.subtle.deriveBits({ name:"PBKDF2", hash:"SHA-256",
+              salt: enc.encode("agentsnet-e2e:" + S.room), iterations: 100000 }, k, 256))
+      .then(b => crypto.subtle.importKey("raw", b, { name:"AES-GCM" }, false, ["encrypt","decrypt"]));
+  }
+  return S._keyP;
+}
+
+async function encText(pt){
+  if (!S.e2e || !pt) return pt;
+  if (!crypto.subtle) throw new Error("E2E требует HTTPS или localhost (WebCrypto недоступен)");
+  const k = await e2eKey(), iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name:"AES-GCM", iv }, k, new TextEncoder().encode(pt)));
+  const out = new Uint8Array(iv.length + ct.length);
+  out.set(iv, 0); out.set(ct, iv.length);
+  return "enc:v1:" + b64e(out);
+}
+
+async function decToken(tok){
+  if (S._dk.has(tok)) return S._dk.get(tok);
+  let plain = null;
+  try {
+    if (!crypto.subtle) throw new Error("no webcrypto");
+    const raw = b64d(tok.slice(7)); /* "enc:v1:" is 7 chars */
+    const pt = await crypto.subtle.decrypt({ name:"AES-GCM", iv: raw.slice(0,12) }, await e2eKey(), raw.slice(12));
+    plain = new TextDecoder().decode(pt);
+  } catch (e) { plain = null; }
+  S._dk.set(tok, plain);
+  return plain;
+}
+
+/* подстановка расшифровок в строку */
+function decTextSync(s){
+  if (!S.e2e || !s || s.indexOf("enc:v1:") === -1) return s || "";
+  return s.replace(ENCRE, tok => {
+    const p = S._dk.get(tok);
+    return p == null ? "🔒[не расшифровано]" : p;
+  });
+}
+
+/* собрать и расшифровать все новые токены в состоянии */
+async function ensureDecrypted(){
+  if (!S.e2e || !S.d) return;
+  if (!crypto.subtle) { alertOnceNoCrypto(); return; }
+  const toks = new Set();
+  const scan = t => { if (t) (t.match(ENCRE) || []).forEach(x => { if (!S._dk.has(x)) toks.add(x); }); };
+  (S.d.messages || []).forEach(m => scan(m.text));
+  (S.d.tasks_active || []).concat(S.d.tasks_closed || []).forEach(t => {
+    scan(t.title); scan(t.desc); scan(t.result); (t.comments || []).forEach(c => scan(c.text));
+  });
+  (S.d.files || []).forEach(f => scan(f.note));
+  await Promise.all([...toks].map(decToken));
+}
+
+let _noCryptoWarned = false;
+function alertOnceNoCrypto(){ if (!_noCryptoWarned) { _noCryptoWarned = true;
+  $("errbar").style.display = "block";
+  $("errbar").textContent = "WebCrypto недоступен (нужен HTTPS или localhost): зашифрованные тексты показать нельзя."; } }
+
+/* вход */
+let _riTmr = null;
+function checkRoom(){
+  const room = $("iroom").value.trim();
+  const rh = $("rhint");
+  clearTimeout(_riTmr); rh.textContent = "";
+  if (!room) { $("e2efield").style.display = "none"; S.roomE2E = false; return; }
+  _riTmr = setTimeout(async () => {
+    try {
+      const r = await fetch(url("/admin/api/roominfo?room=" + encodeURIComponent(room)));
+      const j = await r.json();
+      S.roomE2E = !!j.e2e;
+      $("e2efield").style.display = (j.exists && j.e2e) ? "block" : "none";
+      rh.innerHTML = j.exists
+        ? ('комната найдена · шифрование: <span class="' + (j.e2e ? "ok" : "") + '">' + (j.e2e ? "E2E вкл." : "нет") + "</span>")
+        : '<span class="bad">комната с таким именем не найдена на сервере</span>';
+    } catch (e) { rh.textContent = ""; }
+  }, 350);
+}
+$("iroom").addEventListener("input", checkRoom);
+
+async function doLogin(){
+  const room = $("iroom").value.trim(), pass = $("ipass").value, epass = $("iepass").value;
+  $("lerr").textContent = "";
+  if (!room || !pass) { $("lerr").textContent = "Введите имя комнаты и пароль."; return; }
+  if (S.roomE2E && !epass) { $("lerr").textContent = "Эта комната с E2E-шифрованием — введите E2E-пароль."; return; }
+  try {
+    const r = await fetch(url("/admin/api/login"), { method: "POST",
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify({ room, password: pass }) });
+    const j = await r.json();
+    if (!r.ok || !j.ok) throw new Error(j.error || ("HTTP " + r.status));
+    if (j.e2e && !epass) throw new Error("Комната с E2E-шифрованием: введите E2E-пароль и войдите снова.");
+    S.token = j.token; S.room = j.room; S.e2e = !!j.e2e; S.epass = epass;
+    sessionStorage.setItem("an_token", j.token); sessionStorage.setItem("an_room", j.room);
+    sessionStorage.setItem("an_e2e", S.e2e ? "1" : "0");
+    if (S.e2e) sessionStorage.setItem("an_epass", epass); else sessionStorage.removeItem("an_epass");
+    boot();
+  } catch (e) { $("lerr").textContent = "Ошибка: " + e.message; }
+}
+$("ipass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+$("iepass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+
+function logout(){ ["an_token","an_room","an_e2e","an_epass"].forEach(k => sessionStorage.removeItem(k)); location.reload(); }
+
+function showLogin(msg){
+  $("app").style.display = "none"; $("login").style.display = "flex";
+  if (msg) $("lerr").textContent = msg;
+  if (S.room) { $("iroom").value = S.room; checkRoom(); }
+}
+
+async function changeEpass(){
+  const p = prompt("E2E-пароль комнаты «" + S.room + "»:", S.epass || "");
+  if (p === null) return;
+  S.epass = p; S._dk.clear(); S._keyP = null;
+  sessionStorage.setItem("an_epass", p);
+  S._renderedUpTo = 0; S._chatInitFor = null;  /* force full chat rebuild with new key */
+  await ensureDecrypted(); render();
+}
+
+function boot(){
+  if (!S.token || !S.room) { showLogin(); return; }
+  if (S.e2e && !S.epass) { showLogin("Введите E2E-пароль комнаты."); return; }
+  $("login").style.display = "none"; $("app").style.display = "flex";
+  $("hroom").textContent = "комната: " + S.room;
+  $("he2e").style.display = S.e2e ? "" : "none";
+  if (S.e2e) $("he2e").onclick = changeEpass;
+  syncMtabs();
+  refresh(true);
+  S.timer = setInterval(() => refresh(false), 4000);
+}
+
+/* данные */
+async function refresh(full){
+  try {
+    const j = await api("/admin/api/state?since=" + (full ? 0 : S.lastId));
+    S.fail = 0; $("errbar").style.display = "none";
+    $("hstate").textContent = "онлайн"; $("hstate").style.color = "var(--ac)";
+    $("hutc").textContent = "UTC " + (j.utc || "");
+    if (j.room && typeof j.room.e2e === "boolean") {
+      S.e2e = j.room.e2e;
+      $("he2e").style.display = S.e2e ? "" : "none";
+    }
+    if (full || !S.d) S.d = j;
+    else {
+      S.d.agents = j.agents; S.d.tasks_active = j.tasks_active; S.d.tasks_closed = j.tasks_closed;
+      S.d.files = j.files; S.d.last_id = j.last_id; S.d.utc = j.utc;
+      for (const m of (j.messages || [])) S.d.messages.push(m);
+      if (S.d.messages.length > 800) S.d.messages = S.d.messages.slice(-800);
+    }
+    if (j.messages && j.messages.length) S.lastId = Math.max(S.lastId, j.messages[j.messages.length - 1].id);
+    else if (j.last_id && full) S.lastId = j.last_id;
+    await ensureDecrypted();
+    render();
+  } catch (e) {
+    if (e.message === "unauthorized") return;
+    S.fail++;
+    $("hstate").textContent = "связь потеряна"; $("hstate").style.color = "var(--red)";
+    if (S.fail > 1) { $("errbar").style.display = "block"; $("errbar").textContent = "Нет связи с сервером AgentsNET: " + e.message; }
+  }
+}
+
+function render(){ if (!S.d) return; renderChat(); renderPane(); }
+
+/* чат */
+function msgNode(m){
+  const div = document.createElement("div");
+  let cls = "m";
+  if (m.kind === "log") cls += " " + (m.author === "SYSTEM" ? "sys" : "log");
+  if (m.author === "ADMIN (human)") cls += " admin";
+  div.className = cls;
+  let text = decTextSync(m.text);
+  let warn = "";
+  if (S.e2e && m.kind === "chat" && m.text.indexOf("enc:v1:") === -1)
+    warn = ' <span class="plainwarn">⚠ открытый текст</span>';
+  div.innerHTML = '<span class="i">#' + m.id + '</span><span class="t">[' + esc((m.ts||"").slice(5,16)) + ']</span> <span class="a">' +
+                  esc(m.author) + ':</span> ' + esc(text) + warn;
+  return div;
+}
+
+function renderChat(){
+  const box = $("msgs");
+  const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+  if (S._chatInitFor !== S.room) { box.innerHTML = ""; S._chatInitFor = S.room; S._renderedUpTo = 0; }
+  for (const m of (S.d.messages || [])) if (m.id > S._renderedUpTo) { box.appendChild(msgNode(m)); S._renderedUpTo = m.id; }
+  if (nearBottom) box.scrollTop = box.scrollHeight;
+}
+
+/* панельки */
+function setTab(t){ S.tab = t; document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t)); syncMtabs(); renderPane(); }
+function mgoChat(){ S.mview = "chat"; syncMtabs(); const b = $("msgs"); requestAnimationFrame(() => { b.scrollTop = b.scrollHeight; }); }
+function mgoTab(t){ S.tab = t; S.mview = "side"; document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t)); syncMtabs(); renderPane(); }
+function syncMtabs(){
+  document.body.classList.toggle("m-chat", S.mview === "chat");
+  document.body.classList.toggle("m-side", S.mview === "side");
+  document.querySelectorAll("#mtabs button").forEach(b => {
+    b.classList.toggle("on", b.dataset.m === "chat" ? S.mview === "chat" : (S.mview === "side" && S.tab === b.dataset.t));
+  });
+}
+
+function tag(st){ return '<span class="tag st-' + esc(st) + '">' + esc(st) + "</span>"; }
+function pri(pr){ return '<span class="tag pri-' + esc(pr) + '">' + esc(pr) + "</span>"; }
+
+function taskCard(t, closed){
+  const cms = (t.comments || []).map(c =>
+    '<div class="cmt">- [' + esc((c.ts||"").slice(5,16)) + "] " + esc(c.author) + ": " + esc(decTextSync(c.text)) + "</div>").join("");
+  const meta = [];
+  meta.push("создал: " + esc(t.created_by) + " · " + esc((t.created_at||"").slice(5,16)));
+  if (t.status === "ASSIGNED") meta.push("исполнитель: <b>" + esc(t.assigned_to) + "</b> · дедлайн: " + esc(t.deadline));
+  if (t.status === "DONE" || t.status === "CANCELLED") meta.push("закрыто: " + esc((t.closed_at||"").slice(5,16)));
+  return '<div class="task">' +
+    '<div class="thead"><span class="tid">#' + t.id + '</span><span class="ttl">' + esc(decTextSync(t.title)) + "</span>" + pri(t.priority) + tag(t.status) + "</div>" +
+    '<div class="meta">' + meta.join(" · ") + "</div>" +
+    (t.desc ? '<div class="desc">' + esc(decTextSync(t.desc)) + "</div>" : "") +
+    (t.result ? '<div class="result">результат: ' + esc(decTextSync(t.result)) + "</div>" : "") +
+    (cms ? '<div class="cmts">' + cms + "</div>" : "") +
+    '<div class="acts">' +
+      '<select id="sel' + t.id + '"><option value="">статус →</option><option value="OPEN">OPEN</option><option value="DONE">DONE</option><option value="CANCELLED">CANCELLED</option></select>' +
+      '<button class="abtn" onclick="applyStatus(' + t.id + ')">применить</button>' +
+      '<button class="abtn" onclick="addComment(' + t.id + ')">комментарий</button>' +
+      (closed ? "" : '<button class="abtn danger" onclick="delTask(' + t.id + ')">удалить</button>') +
+    "</div></div>";
+}
+
+function paneTasks(){
+  const d = S.d, open = [], asg = [], cls = [];
+  (d.tasks_active || []).forEach(t => (t.status === "ASSIGNED" ? asg : open).push(t));
+  (d.tasks_closed || []).forEach(t => cls.push(t));
+  let h = '<div class="tform">' +
+    '<input id="ntitle" placeholder="Заголовок новой задачи *">' +
+    '<textarea id="ndesc" placeholder="Описание (необязательно)"></textarea>' +
+    '<select id="npri"><option>NORM</option><option>HIGH</option><option>URGENT</option><option>LOW</option></select>' +
+    '<button class="abtn" onclick="createTask()">+ Создать задачу</button></div>';
+  h += '<div class="grp">В работе (' + asg.length + ")</div>" + (asg.map(t => taskCard(t, false)).join("") || '<div class="empty">нет</div>');
+  h += '<div class="grp">Открытые (' + open.length + ")</div>" + (open.map(t => taskCard(t, false)).join("") || '<div class="empty">нет</div>');
+  h += '<div class="grp">Завершённые (' + cls.length + ")</div>" + (cls.map(t => taskCard(t, true)).join("") || '<div class="empty">нет</div>');
+  return h;
+}
+
+function paneAgents(){
+  const a = S.d.agents || [];
+  if (!a.length) return '<div class="empty">Агенты ещё не подключались.</div>';
+  return a.map(x => '<div class="arow"><span><span class="nm">' + esc(x.codename) + '</span> <span class="md">' +
+    esc(x.model) + (x.caps ? " · " + esc(x.caps) : "") + '</span></span><span class="md">был(а) ' + esc(x.seen_s) + " назад</span></div>").join("");
+}
+
+function paneFiles(){
+  const f = S.d.files || [];
+  if (!f.length) return '<div class="empty">Активных файлов нет (файлы стираются после подтверждения получения или по TTL).</div>';
+  return f.map(x => '<div class="arow"><span><span class="nm">#' + x.id + " " + esc(x.fname) + '</span> <span class="md">' +
+    fmtSize(x.size) + " · " + esc(x.by) + " · до " + esc(x.expires) + (x.note ? " · " + esc(decTextSync(x.note)) : "") +
+    '</span></span><span><button class="abtn" onclick="dlFile(' + x.id + ')">скачать</button> ' +
+    '<button class="abtn danger" onclick="purgeFile(' + x.id + ')">удалить</button></span></div>').join("");
+}
+
+function renderPane(){
+  const p = $("pane");
+  if (S.tab === "tasks") p.innerHTML = paneTasks();
+  else if (S.tab === "agents") p.innerHTML = paneAgents();
+  else p.innerHTML = paneFiles();
+}
+
+function fmtSize(n){ if (n < 1024) return n + "B"; if (n < 1048576) return (n/1024).toFixed(1) + "KB"; return (n/1048576).toFixed(2) + "MB"; }
+
+/* действия */
+async function sendChat(){
+  const box = $("ctext"); const v = box.value.trim(); if (!v) return;
+  box.value = "";
+  try { const text = await encText(v); await api("/admin/api/chat", { method: "POST", body: JSON.stringify({ text }) }); refresh(false); }
+  catch (e) { box.value = v; alert("Ошибка: " + e.message); }
+}
+async function createTask(){
+  const title = $("ntitle").value.trim(), desc = $("ndesc").value.trim(), pri = $("npri").value;
+  if (!title) { alert("Нужен заголовок"); return; }
+  try {
+    await api("/admin/api/task/create", { method: "POST", body: JSON.stringify({
+      title: await encText(title), desc: await encText(desc), priority: pri }) });
+    refresh(false);
+  } catch (e) { alert("Ошибка: " + e.message); }
+}
+async function applyStatus(id){
+  const st = $("sel" + id).value; if (!st) return;
+  const reason = prompt("Причина смены статуса (попадёт в чат агентам):", "");
+  if (reason === null) return;
+  try { await api("/admin/api/task/status", { method: "POST", body: JSON.stringify({ id, status: st, reason: await encText(reason) }) }); refresh(false); }
+  catch (e) { alert("Ошибка: " + e.message); }
+}
+async function addComment(id){
+  const text = prompt("Комментарий к задаче #" + id + ":");
+  if (!text) return;
+  try { await api("/admin/api/task/comment", { method: "POST", body: JSON.stringify({ id, text: await encText(text) }) }); refresh(false); }
+  catch (e) { alert("Ошибка: " + e.message); }
+}
+async function delTask(id){
+  if (!confirm("Удалить задачу #" + id + "? Агентам в чат уйдёт запись об удалении.")) return;
+  const reason = prompt("Причина удаления (видна агентам):", "");
+  if (reason === null) return;
+  try { await api("/admin/api/task/delete", { method: "POST", body: JSON.stringify({ id, reason: await encText(reason) }) }); refresh(false); }
+  catch (e) { alert("Ошибка: " + e.message); }
+}
+async function purgeFile(id){
+  if (!confirm("Удалить файл #" + id + " с сервера?")) return;
+  try { await api("/admin/api/file/purge", { method: "POST", body: JSON.stringify({ id }) }); refresh(false); }
+  catch (e) { alert("Ошибка: " + e.message); }
+}
+
+/* скачивание файла */
+async function dlFile(id){
+  try {
+    const r = await fetch(url("/admin/api/file?id=" + id), { headers: { "X-Admin-Token": S.token } });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const buf = new Uint8Array(await r.arrayBuffer());
+    let blob = new Blob([buf]), name = "file_" + id;
+    const fmeta = (S.d && S.d.files || []).find(x => x.id === id);
+    if (fmeta) name = fmeta.fname;
+    if (S.e2e) {
+      const magic = FILE_MAGIC.every((b, i) => buf[i] === b);
+      if (!magic) { alert("Файл не помечен как зашифрованный — скачиваю как есть (отправитель мог не использовать шифрование)."); }
+      else {
+        try {
+          const pt = new Uint8Array(await crypto.subtle.decrypt(
+            { name: "AES-GCM", iv: buf.slice(8, 20) }, await e2eKey(), buf.slice(20)));
+          const nl = pt.indexOf(10); /* первый \n = имя файла */
+          if (nl > 0) { name = new TextDecoder().decode(pt.slice(0, nl)); blob = new Blob([pt.slice(nl + 1)]); }
+          else blob = new Blob([pt]);
+        } catch (e) { alert("Не удалось расшифровать файл: неверный E2E-пароль?"); return; }
+      }
+    }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) { alert("Ошибка скачивания: " + e.message); }
+}
+
+/* экспорт */
+async function doExport(){
+  try {
+    const r = await fetch(url("/admin/api/export"), { headers: { "X-Admin-Token": S.token } });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    let t = await r.text();
+    if (S.e2e) {
+      const toks = [...new Set(t.match(ENCRE) || [])];
+      await Promise.all(toks.map(decToken));
+      t = t.replace(ENCRE, tok => { const p = S._dk.get(tok); return p == null ? "🔒[не расшифровано]" : p; });
+    }
+    const blob = new Blob([t], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "chat-" + S.room + ".txt"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) { alert("Ошибка экспорта: " + e.message); }
+}
+
+if (S.token && S.room) boot(); else showLogin();
+</script>
+</body>
+</html>
