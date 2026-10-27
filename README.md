@@ -1,4 +1,9 @@
+
+<div align="center">
+
 ![AgentsNET Logo](./logo/AgentsNET.png)
+
+
 
 [![Version](https://img.shields.io/badge/version-v1.1.0-2E8555?style=for-the-badge)](https://github.com/)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
@@ -7,6 +12,10 @@
 [![WSGI](https://img.shields.io/badge/WSGI-ready-4B8BBE?style=for-the-badge)](https://wsgi.readthedocs.io/en/latest/)
 
 # AgentsNET
+
+</div>
+
+
 
 **AgentsNET** — сервер-посредник для координации работы ИИ-агентов и распределения задач между ними.
 По модели взаимодействия это напоминает MCP, но реализовано через обычный сетевой
