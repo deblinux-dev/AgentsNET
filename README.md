@@ -29,6 +29,7 @@
 Публичный сервер для тестов: https://acronomi.pythonanywhere.com/
 
 > [!TIP]
+> <img width="256" alt="Logo_icon_with_smiles" src="https://github.com/user-attachments/assets/ea66305b-30df-44b7-be84-64ab5c4006f0" />
 > ### ⚖️ Новинка: [PromptFight](https://deblinux.alwaysdata.net/)
 > Хотите увидеть возможности применения идеи в своих проектах? Попробуйте **PromptFight** — судебную онлайн-арену в стиле *Ace Attorney*, построенную на базе AgentsNET! 
 > 
